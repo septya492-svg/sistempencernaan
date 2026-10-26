@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petualangan Sistem Pencernaan — SMPN 4 Glenmore Satu Atap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root{
+  --coral:#FF7A59; --coral-2:#FF5E3A; --coral-dk:#C43F22;
+  --amber:#FFB03A; --gold:#FFD84D; --amber-dk:#C47A00;
+  --pink:#FF6B9D; --pink-dk:#C43F70;
+  --teal:#2FC4B2; --teal-2:#5FDDCC; --teal-dk:#1A8E80;
+  --purple:#7B6CF6; --purple-2:#A594FF; --purple-dk:#4B3BC9;
+  --green:#3FC97A; --green-dk:#229454;
+  --cream:#FFF4E6; --paper:#FFFFFF;
+  --ink:#2E1A30; --ink-2:#5A3A52; --ink-3:#8B6A82;
+  --shadow-sm:0 4px 12px rgba(46,26,48,.12);
+  --shadow-md:0 10px 30px rgba(46,26,48,.22);
+  --shadow-lg:0 20px 60px rgba(46,26,48,.4);
+}
+
+/* ============================================================
+   GLOBAL RESET
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  background:#0E0418;
+  color:#fff;
+  display:grid;
+  place-items:center;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+h1,h2,h3,h4{font-family:'Fredoka',sans-serif;font-weight:600;line-height:1.1}
+
+/* ============================================================
+   STAGE & SLIDES — 16:9 fixed design, scaled to fit
+   ============================================================ */
+.stage-wrap{
+  position:relative;
+  width:min(100vw,calc(100vh*16/9));
+  height:min(100vh,calc(100vw*9/16));
+  overflow:hidden;
+  background:#0E0418;
+  box-shadow:0 0 100px rgba(0,0,0,.8);
+}
+.stage{
+  position:absolute;top:0;left:0;
+  width:1280px;height:720px;
+  transform-origin:top left;
+  overflow:hidden;
+  background:#1A0822;
+}
+.slide{
+  position:absolute;inset:0;
+  width:1280px;height:720px;
+  display:none;
+  overflow:hidden;
+}
+.slide.active{display:block;animation:slideIn .65s cubic-bezier(.22,1,.36,1)}
+@keyframes slideIn{
+  from{opacity:0;transform:translateY(24px) scale(.99)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* ============================================================
+   HUD
+   ============================================================ */
+.hud{
+  position:absolute;top:0;left:0;right:0;height:72px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;z-index:100;
+  pointer-events:none;
+}
+.hud > *{pointer-events:auto}
+.hud-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:14px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:#fff;font-family:'Fredoka',sans-serif;font-weight:500;font-size:15px;
+  transition:all .2s;cursor:pointer;
+}
+.hud-btn:hover{background:rgba(255,255,255,.26);transform:translateY(-2px)}
+.hud-btn:active{transform:translateY(1px)}
+.hud-dots{
+  display:flex;gap:7px;align-items:center;
+  background:rgba(255,255,255,.1);
+  padding:10px 18px;border-radius:999px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.16);
+}
+.hud-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .35s}
+.hud-dot.active{
+  background:linear-gradient(180deg,var(--gold),var(--amber));
+  box-shadow:0 0 12px rgba(255,216,77,.9);
+  transform:scale(1.4);
+}
+.hud-dot.done{background:rgba(255,255,255,.55)}
+
+/* ============================================================
+   COMMON COMPONENTS
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px;
+  padding:15px 32px;border-radius:16px;color:#fff;
+  transition:transform .15s,box-shadow .15s;
+  letter-spacing:.3px;line-height:1;white-space:nowrap;
+}
+.btn-primary{
+  background:linear-gradient(180deg,#FF9B6A 0%,#FF6B45 100%);
+  box-shadow:0 8px 0 #C43F22,0 16px 28px rgba(255,107,69,.45),inset 0 2px 0 rgba(255,255,255,.45);
+  text-shadow:0 2px 4px rgba(120,30,10,.35);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 0 #C43F22,0 20px 34px rgba(255,107,69,.55),inset 0 2px 0 rgba(255,255,255,.45)}
+.btn-primary:active{transform:translateY(6px);box-shadow:0 2px 0 #C43F22,0 6px 12px rgba(255,107,69,.4),inset 0 2px 0 rgba(255,255,255,.45)}
+.btn-teal{
+  background:linear-gradient(180deg,#5FDDCC 0%,#1FB3A2 100%);
+  box-shadow:0 8px 0 #14897C,0 16px 28px rgba(47,196,178,.45),inset 0 2px 0 rgba(255,255,255,.45);
+  text-shadow:0 2px 4px rgba(0,80,70,.35);
+}
+.btn-teal:hover{transform:translateY(-2px);box-shadow:0 10px 0 #14897C,0 20px 34px rgba(47,196,178,.55),inset 0 2px 0 rgba(255,255,255,.45)}
+.btn-teal:active{transform:translateY(6px);box-shadow:0 2px 0 #14897C}
+.btn-ghost{
+  background:rgba(255,255,255,.14);
+  border:1.5px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 4px 12px rgba(0,0,0,.15);font-size:16px;padding:12px 22px;
+}
+.btn-ghost:hover{background:rgba(255,255,255,.24);transform:translateY(-2px)}
+.btn-ghost:active{transform:translateY(1px)}
+.btn-lg{font-size:22px;padding:20px 42px;border-radius:20px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:700;padding:6px 14px;border-radius:999px;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
+  color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+
+/* slide-level nav bar */
+.slide-nav{
+  position:absolute;bottom:20px;left:0;right:0;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 32px;z-index:50;
+}
+
+/* Section title pattern */
+.section-head{text-align:center;padding-top:88px;position:relative;z-index:5}
+.section-head .eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:10px;
+}
+.section-head h2{
+  font-size:42px;color:#fff;
+  text-shadow:0 4px 24px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.4);
+  margin-bottom:8px;letter-spacing:-.5px;
+}
+.section-head p{font-size:16px;color:rgba(255,255,255,.75);font-weight:600}
+
+/* ============================================================
+   BACKGROUND LAYERS
+   ============================================================ */
+.bg-layer{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 55% 45% at 18% 10%,rgba(255,216,140,.32),transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 15%,rgba(255,122,89,.28),transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% 115%,#2A0A3A,#160420 70%),
+    linear-gradient(165deg,#5A1E5E 0%,#3A1450 45%,#1E0A2E 100%);
+}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(50px);opacity:.55;pointer-events:none;animation:floaty 14s ease-in-out infinite}
+@keyframes floaty{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(20px,-30px) scale(1.08)}
+}
+.bg-orb.a{width:340px;height:340px;background:radial-gradient(circle,#FFB03A,#FF5E3A);top:-80px;left:-60px}
+.bg-orb.b{width:280px;height:280px;background:radial-gradient(circle,#7B6CF6,#4B3BC9);top:18%;right:-80px;animation-delay:-4s}
+.bg-orb.c{width:240px;height:240px;background:radial-gradient(circle,#2FC4B2,#1A8E80);bottom:-60px;left:32%;animation-delay:-8s}
+
+/* ============================================================
+   SLIDE 1 — COVER
+   ============================================================ */
+.slide[data-slide="1"] .bg-layer{
+  background:
+    radial-gradient(ellipse 65% 55% at 22% 8%,rgba(255,216,140,.42),transparent 60%),
+    radial-gradient(ellipse 55% 45% at 82% 12%,rgba(255,122,89,.32),transparent 60%),
+    radial-gradient(ellipse 90% 65% at 50% 115%,#2A0A3A,#120418 70%),
+    linear-gradient(160deg,#5A1E5E 0%,#3A1450 45%,#1A0624 100%);
+}
+.cover-rays{
+  position:absolute;inset:0;
+  background:conic-gradient(from 205deg at 28% -10%,transparent 0deg,rgba(255,216,140,.14) 15deg,transparent 35deg,transparent 55deg,rgba(255,216,140,.1) 75deg,transparent 95deg,rgba(255,216,140,.08) 110deg,transparent 130deg);
+  mix-blend-mode:screen;filter:blur(24px);pointer-events:none;
+}
+.cover-content{
+  position:absolute;inset:0;
+  display:grid;grid-template-columns:1fr 1.15fr;
+  align-items:center;gap:20px;
+  padding:40px 72px 40px 60px;z-index:5;
+}
+.cover-left{position:relative;display:grid;place-items:center}
+.cover-mascot{
+  width:340px;position:relative;z-index:2;
+  animation:mascotBob 4.2s ease-in-out infinite;
+  filter:drop-shadow(0 30px 40px rgba(255,140,60,.35));
+}
+@keyframes mascotBob{
+  0%,100%{transform:translateY(0) rotate(-2deg)}
+  50%{transform:translateY(-18px) rotate(2deg)}
+}
+.cover-halo{
+  position:absolute;width:440px;height:440px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,216,140,.32),rgba(255,122,89,.12) 45%,transparent 70%);
+  filter:blur(10px);z-index:1;
+  animation:haloPulse 4s ease-in-out infinite;
+}
+@keyframes haloPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.1);opacity:1}}
+.cover-right{position:relative;z-index:3}
+.cover-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,rgba(123,108,246,.9),rgba(75,59,201,.95));
+  padding:8px 18px;border-radius:999px;
+  font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  box-shadow:0 6px 0 #2E1E9E,0 12px 26px rgba(75,59,201,.45);
+  margin-bottom:18px;
+}
+.cover-title{font-size:72px;line-height:.95;margin-bottom:18px;letter-spacing:-2.5px}
+.cover-title .line1{
+  display:block;color:#FFF4E6;
+  text-shadow:0 6px 30px rgba(0,0,0,.5),0 3px 0 rgba(200,80,40,.6);
+  font-weight:500;
+}
+.cover-title .line2{
+  display:block;
+  background:linear-gradient(120deg,#FFD84D 0%,#FF7A59 45%,#FF6B9D 100%);
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+  filter:drop-shadow(0 6px 24px rgba(255,122,89,.5));
+  font-weight:700;
+}
+.cover-meta{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.cover-meta .chip{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);font-size:14px;padding:8px 16px}
+.cover-tagline{
+  font-size:17px;font-weight:600;color:rgba(255,244,230,.82);
+  line-height:1.5;max-width:480px;margin-bottom:32px;
+}
+
+/* ============================================================
+   SLIDE 2 — DASHBOARD MAP
+   ============================================================ */
+.map-wrap{position:absolute;inset:0;padding-top:84px}
+.map-canvas{position:relative;width:100%;height:100%}
+.map-path{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:1;
+}
+.portal{
+  position:absolute;transform:translate(-50%,-50%);
+  width:170px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  z-index:3;cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.portal:hover{transform:translate(-50%,-50%) translateY(-10px) scale(1.06)}
+.portal:active{transform:translate(-50%,-50%) translateY(-2px) scale(.98)}
+.portal-icon{
+  width:110px;height:110px;border-radius:28px;
+  display:grid;place-items:center;font-size:52px;
+  background:linear-gradient(180deg,#FFFFFF 0%,#F5E8FF 100%);
+  box-shadow:0 12px 0 rgba(46,26,48,.18),0 24px 40px rgba(46,26,48,.4),inset 0 3px 0 rgba(255,255,255,.9);
+  position:relative;
+  border:1px solid rgba(255,255,255,.9);
+}
+.portal-icon::after{
+  content:'';position:absolute;bottom:-14px;left:12%;right:12%;height:18px;
+  background:radial-gradient(ellipse,rgba(0,0,0,.35),transparent 70%);
+  filter:blur(6px);border-radius:50%;
+}
+.portal-label{
+  font-family:'Fredoka',sans-serif;font-size:17px;font-weight:600;
+  color:#fff;background:rgba(46,26,48,.5);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:6px 16px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.2);
+  text-shadow:0 1px 3px rgba(0,0,0,.4);white-space:nowrap;
+}
+.portal-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,216,140,.4),transparent 65%);
+  filter:blur(14px);z-index:-1;pointer-events:none;
+  animation:portalGlow 3s ease-in-out infinite;
+}
+@keyframes portalGlow{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6}50%{transform:translate(-50%,-50%) scale(1.18);opacity:1}}
+.portal:nth-child(2) .portal-glow{background:radial-gradient(circle,rgba(47,196,178,.4),transparent 65%)}
+.portal:nth-child(3) .portal-glow{background:radial-gradient(circle,rgba(123,108,246,.4),transparent 65%)}
+.portal:nth-child(4) .portal-glow{background:radial-gradient(circle,rgba(255,107,157,.4),transparent 65%)}
+.portal:nth-child(5) .portal-glow{background:radial-gradient(circle,rgba(63,201,122,.4),transparent 65%)}
+.portal:nth-child(6) .portal-glow{background:radial-gradient(circle,rgba(255,176,58,.4),transparent 65%)}
+.map-mascot{
+  position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+  width:200px;z-index:2;pointer-events:none;
+  animation:mascotBob 4s ease-in-out infinite;
+  filter:drop-shadow(0 20px 30px rgba(255,140,60,.45));
+}
+
+/* ============================================================
+   SLIDE 3 — TUJUAN
+   ============================================================ */
+.tujuan-grid{
+  position:absolute;top:170px;left:60px;right:60px;bottom:120px;
+  display:grid;grid-template-columns:1fr 1.3fr;gap:24px;z-index:5;
+}
+.tujuan-left{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.tujuan-mascot{width:200px;filter:drop-shadow(0 20px 30px rgba(255,140,60,.35));animation:mascotBob 3.6s ease-in-out infinite}
+.speech{
+  background:rgba(255,255,255,.94);color:var(--ink);
+  padding:16px 20px;border-radius:20px;border-bottom-right-radius:6px;
+  font-size:15px;font-weight:600;line-height:1.5;
+  box-shadow:var(--shadow-md);position:relative;max-width:260px;
+}
+.speech::before{
+  content:'';position:absolute;top:-10px;left:24px;
+  border:10px solid transparent;border-bottom-color:rgba(255,255,255,.94);border-top:0;
+}
+.tujuan-right{display:flex;flex-direction:column;gap:14px}
+.obj-card{
+  display:flex;gap:16px;align-items:flex-start;
+  background:rgba(255,255,255,.94);color:var(--ink);
+  padding:18px 22px;border-radius:20px;
+  box-shadow:0 8px 0 rgba(0,0,0,.12),var(--shadow-md);
+  border:1px solid rgba(255,255,255,.9);
+  transition:transform .25s;
+}
+.obj-card:hover{transform:translateX(6px)}
+.obj-num{
+  flex:0 0 auto;width:44px;height:44px;border-radius:14px;
+  display:grid;place-items:center;font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:#fff;
+  box-shadow:0 4px 0 rgba(0,0,0,.2),inset 0 2px 0 rgba(255,255,255,.4);
+}
+.obj-card:nth-child(1) .obj-num{background:linear-gradient(180deg,#FF9B6A,#E04A2A)}
+.obj-card:nth-child(2) .obj-num{background:linear-gradient(180deg,#5FDDCC,#1A8E80)}
+.obj-card:nth-child(3) .obj-num{background:linear-gradient(180deg,#A594FF,#4B3BC9)}
+.obj-card:nth-child(4) .obj-num{background:linear-gradient(180deg,#FFA0C0,#C43F70)}
+.obj-text{font-size:15px;font-weight:700;line-height:1.45;color:var(--ink-2);padding-top:6px}
+.obj-text b{color:var(--ink);display:block;font-size:16px;margin-bottom:3px;font-weight:800}
+
+/* ============================================================
+   SLIDE 4 — KONSEP
+   ============================================================ */
+.konsep-wrap{position:absolute;top:158px;left:60px;right:60px;bottom:120px;z-index:5;display:flex;flex-direction:column;gap:18px}
+.konsep-intro{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  padding:16px 22px;border-radius:18px;font-size:15px;font-weight:600;line-height:1.5;
+  text-align:center;color:rgba(255,255,255,.92);
+}
+.konsep-intro b{color:var(--gold)}
+.konsep-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.konsep-card{
+  background:rgba(255,255,255,.94);color:var(--ink);
+  border-radius:24px;padding:22px 24px;
+  box-shadow:0 10px 0 rgba(0,0,0,.14),var(--shadow-md);
+  border:1px solid rgba(255,255,255,.9);
+  display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;
+}
+.konsep-card::before{
+  content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,176,58,.3),transparent 70%);
+}
+.konsep-card.k2::before{background:radial-gradient(circle,rgba(47,196,178,.3),transparent 70%)}
+.konsep-icon{
+  width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:28px;
+  background:linear-gradient(180deg,#FF9B6A,#E04A2A);
+  box-shadow:0 5px 0 #A83018,inset 0 2px 0 rgba(255,255,255,.4);
+  position:relative;z-index:1;
+}
+.konsep-card.k2 .konsep-icon{background:linear-gradient(180deg,#5FDDCC,#1A8E80);box-shadow:0 5px 0 #0F6E62,inset 0 2px 0 rgba(255,255,255,.4)}
+.konsep-card h3{font-size:22px;color:var(--ink);position:relative;z-index:1}
+.konsep-card p{font-size:14.5px;font-weight:600;color:var(--ink-2);line-height:1.5;position:relative;z-index:1}
+.konsep-card .example{
+  margin-top:auto;background:rgba(255,176,58,.16);
+  border-left:4px solid var(--amber);padding:10px 14px;border-radius:10px;
+  font-size:13px;font-weight:700;color:var(--ink-2);
+}
+.konsep-card.k2 .example{background:rgba(47,196,178,.14);border-left-color:var(--teal)}
+.flow-strip{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-radius:18px;padding:16px 20px;
+  display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+}
+.flow-step{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:12px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  font-size:13px;font-weight:800;color:#fff;
+}
+.flow-arrow{color:rgba(255,255,255,.5);font-size:16px;font-weight:700}
+
+/* ============================================================
+   SLIDES 5 & 6 — EKSPLORASI
+   ============================================================ */
+.explore-wrap{
+  position:absolute;top:150px;left:48px;right:48px;bottom:112px;
+  display:grid;grid-template-columns:1fr 1.05fr;gap:24px;z-index:5;
+}
+.explore-stage{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+  border-radius:28px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+}
+.explore-stage::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,216,140,.28),transparent 65%);
+  filter:blur(20px);pointer-events:none;
+}
+.explore-art{
+  width:280px;height:280px;position:relative;z-index:2;
+  animation:artFloat 4s ease-in-out infinite;
+  filter:drop-shadow(0 24px 40px rgba(0,0,0,.4));
+}
+@keyframes artFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.explore-name{
+  position:relative;z-index:2;margin-top:20px;
+  font-family:'Fredoka',sans-serif;font-size:30px;font-weight:600;color:#fff;
+  text-shadow:0 4px 16px rgba(0,0,0,.5);letter-spacing:-.5px;
+}
+.explore-tag{
+  position:relative;z-index:2;margin-top:6px;
+  font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--gold);
+}
+.explore-tabs{display:flex;flex-direction:column;gap:14px}
+.tab-strip{display:flex;gap:8px;flex-wrap:wrap}
+.tab-btn{
+  padding:10px 16px;border-radius:12px;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.18);
+  font-size:13px;font-weight:800;color:rgba(255,255,255,.85);
+  transition:all .2s;cursor:pointer;
+}
+.tab-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.tab-btn.active{
+  background:linear-gradient(180deg,#FF9B6A,#FF6B45);
+  border-color:transparent;color:#fff;
+  box-shadow:0 4px 0 #C43F22,inset 0 2px 0 rgba(255,255,255,.4);
+  transform:translateY(-2px);
+}
+.tab-group-label{
+  font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);margin-bottom:6px;
+}
+.explore-detail{
+  flex:1;background:rgba(255,255,255,.94);color:var(--ink);
+  border-radius:20px;padding:20px 22px;
+  box-shadow:0 8px 0 rgba(0,0,0,.14),var(--shadow-md);
+  border:1px solid rgba(255,255,255,.9);
+  display:flex;flex-direction:column;gap:12px;
+  min-height:0;overflow:hidden;
+}
+.explore-detail h3{
+  font-size:22px;color:var(--ink);display:flex;align-items:center;gap:10px;
+  padding-bottom:10px;border-bottom:2px dashed rgba(90,58,82,.18);
+}
+.explore-detail h3 .dot{
+  width:12px;height:12px;border-radius:50%;background:var(--coral);
+  box-shadow:0 0 10px rgba(255,122,89,.7);
+}
+.explore-desc{font-size:14px;font-weight:600;color:var(--ink-2);line-height:1.55}
+.explore-facts{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:auto}
+.explore-facts li{
+  display:flex;align-items:flex-start;gap:9px;
+  font-size:13px;font-weight:700;color:var(--ink-2);
+  padding:7px 10px;background:rgba(255,176,58,.1);
+  border-radius:9px;border-left:3px solid var(--amber);
+}
+.explore-facts li span:first-child{color:var(--amber-dk);font-size:14px;flex:0 0 auto}
+.tab-content{display:none;flex-direction:column;gap:10px;flex:1;min-height:0}
+.tab-content.active{display:flex;animation:fadeUp .35s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ============================================================
+   SLIDE 7 & 8 — QUIZ
+   ============================================================ */
+.quiz-wrap{
+  position:absolute;top:140px;left:180px;right:180px;bottom:100px;
+  z-index:5;display:flex;flex-direction:column;gap:16px;
+}
+.quiz-meta{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+}
+.quiz-step{
+  background:linear-gradient(135deg,var(--purple),var(--purple-dk));
+  padding:8px 18px;border-radius:999px;font-size:13px;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;color:#fff;
+  box-shadow:0 4px 0 #2E1E9E;
+}
+.quiz-score-pill{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(180deg,#FFE9A8,#FFCB4D);color:#7A4E00;
+  padding:8px 18px;border-radius:999px;font-size:15px;font-weight:800;
+  box-shadow:0 4px 0 #C4871A,inset 0 2px 0 rgba(255,255,255,.6);
+}
+.quiz-progress{height:10px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.15)}
+.quiz-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--coral),var(--pink));transition:width .5s cubic-bezier(.22,1,.36,1);box-shadow:0 0 12px rgba(255,200,80,.6)}
+.quiz-card{
+  background:rgba(255,255,255,.96);color:var(--ink);
+  border-radius:24px;padding:24px 28px;
+  box-shadow:0 10px 0 rgba(0,0,0,.16),var(--shadow-md);
+  border:1px solid rgba(255,255,255,.9);
+  display:flex;flex-direction:column;gap:16px;flex:1;min-height:0;overflow-y:auto;
+}
+.quiz-card::-webkit-scrollbar{width:6px}
+.quiz-card::-webkit-scrollbar-thumb{background:rgba(90,58,82,.2);border-radius:999px}
+.q-diff{
+  display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 12px;border-radius:999px;
+}
+.q-diff.mudah{background:rgba(63,201,122,.18);color:var(--green-dk);border:1px solid rgba(63,201,122,.4)}
+.q-diff.sedang{background:rgba(255,176,58,.18);color:var(--amber-dk);border:1px solid rgba(255,176,58,.4)}
+.q-diff.sulit{background:rgba(255,94,58,.18);color:var(--coral-dk);border:1px solid rgba(255,94,58,.4)}
+.q-text{font-size:18px;font-weight:800;line-height:1.5;color:var(--ink)}
+.q-options{display:flex;flex-direction:column;gap:10px}
+.opt-btn{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 18px;border-radius:14px;
+  background:rgba(255,244,230,.7);
+  border:2px solid rgba(255,176,58,.28);
+  font-size:15px;font-weight:700;color:var(--ink);text-align:left;
+  transition:all .18s;cursor:pointer;line-height:1.35;
+}
+.opt-btn:hover:not(:disabled){transform:translateX(5px);border-color:var(--amber);background:rgba(255,244,230,1)}
+.opt-btn:disabled{cursor:default;transform:none}
+.opt-letter{
+  flex:0 0 auto;width:32px;height:32px;border-radius:10px;
+  display:grid;place-items:center;font-family:'Fredoka',sans-serif;font-weight:700;font-size:15px;
+  background:linear-gradient(180deg,#FFE9A8,#FFCB4D);color:#7A4E00;
+  box-shadow:0 3px 0 #C4871A,inset 0 1px 0 rgba(255,255,255,.6);
+}
+.opt-btn.correct{background:linear-gradient(180deg,#DFFBEF,#C6F6E0);border-color:var(--green);color:var(--green-dk);box-shadow:0 4px 0 #4AB77F;animation:popCorrect .45s}
+.opt-btn.correct .opt-letter{background:linear-gradient(180deg,#7FE0AC,#3FC97A);color:#fff;box-shadow:0 3px 0 #229454}
+.opt-btn.wrong{background:linear-gradient(180deg,#FFE9E9,#FFD5D5);border-color:#FF8C8C;color:#B02A2A;box-shadow:0 4px 0 #E07070;animation:shakeOpt .4s}
+.opt-btn.wrong .opt-letter{background:linear-gradient(180deg,#FFB0B0,#FF8C8C);color:#fff;box-shadow:0 3px 0 #C05050}
+@keyframes popCorrect{0%{transform:scale(.97)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+@keyframes shakeOpt{10%,90%{transform:translateX(-4px)}30%,70%{transform:translateX(4px)}50%{transform:translateX(-2px)}}
+.feedback{
+  display:none;align-items:flex-start;gap:12px;
+  padding:14px 18px;border-radius:14px;
+  font-size:14px;font-weight:600;line-height:1.5;
+}
+.feedback.show{display:flex;animation:fadeUp .4s}
+.feedback.correct{background:rgba(63,201,122,.14);border-left:4px solid var(--green);color:var(--green-dk)}
+.feedback.wrong{background:rgba(255,94,58,.14);border-left:4px solid var(--coral-2);color:var(--coral-dk)}
+.feedback b{display:block;margin-bottom:4px;font-size:14px}
+.quiz-next{
+  display:none;align-self:flex-end;
+  padding:12px 26px;border-radius:14px;font-size:15px;
+  background:linear-gradient(180deg,#5FDDCC,#1FB3A2);color:#fff;
+  box-shadow:0 5px 0 #14897C,inset 0 2px 0 rgba(255,255,255,.4);
+  font-family:'Fredoka',sans-serif;font-weight:600;transition:all .15s;
+}
+.quiz-next.show{display:inline-flex}
+.quiz-next:hover{transform:translateY(-2px);box-shadow:0 7px 0 #14897C}
+.quiz-next:active{transform:translateY(3px);box-shadow:0 2px 0 #14897C}
+
+/* Result panels */
+.quiz-result{display:none;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:16px}
+.quiz-result.show{display:flex;animation:fadeUp .5s}
+.result-stars{display:flex;gap:12px;font-size:56px;line-height:1}
+.result-stars span{filter:grayscale(1) opacity(.2);transform:scale(.7);transition:all .5s cubic-bezier(.34,1.56,.64,1)}
+.result-stars span.on{filter:none;transform:scale(1);animation:starPop .6s cubic-bezier(.34,1.56,.64,1);text-shadow:0 6px 20px rgba(255,180,40,.6)}
+@keyframes starPop{0%{transform:scale(0) rotate(-60deg)}70%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+.result-score{
+  font-family:'Fredoka',sans-serif;font-size:72px;font-weight:700;line-height:1;
+  background:linear-gradient(120deg,#FF7A59,#FF6B9D,#7B6CF6);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.result-of{font-size:15px;font-weight:700;color:var(--ink-3)}
+.result-note{
+  background:rgba(255,244,230,.7);border:2px dashed rgba(255,176,58,.5);
+  border-radius:14px;padding:14px 20px;font-size:14px;font-weight:600;
+  color:var(--ink-2);line-height:1.5;max-width:520px;
+}
+
+/* ============================================================
+   SLIDE 9 — PENUTUP
+   ============================================================ */
+.penutup-wrap{
+  position:absolute;top:96px;left:80px;right:80px;bottom:80px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:24px;text-align:center;z-index:5;
+}
+.penutup-mascot{
+  width:200px;filter:drop-shadow(0 30px 40px rgba(255,140,60,.45));
+  animation:celebrateJump 1.2s ease-in-out infinite;
+}
+@keyframes celebrateJump{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-22px) rotate(3deg)}}
+.penutup-title{
+  font-size:52px;letter-spacing:-1.5px;
+  background:linear-gradient(120deg,#FFD84D,#FF7A59,#FF6B9D);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 6px 24px rgba(255,122,89,.5));
+}
+.penutup-sub{font-size:17px;font-weight:600;color:rgba(255,244,230,.85);max-width:560px;line-height:1.55}
+.profile-card{
+  background:rgba(255,255,255,.94);color:var(--ink);
+  border-radius:20px;padding:20px 28px;
+  box-shadow:0 8px 0 rgba(0,0,0,.14),var(--shadow-md);
+  border:1px solid rgba(255,255,255,.9);
+  display:flex;flex-direction:column;gap:6px;align-items:center;
+  min-width:380px;
+}
+.profile-card .school{font-size:16px;font-weight:800;color:var(--ink)}
+.profile-card .info{font-size:13px;font-weight:700;color:var(--ink-3)}
+.profile-card .divider{width:60px;height:2px;background:rgba(90,58,82,.2);margin:6px 0;border-radius:2px}
+.penutup-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+/* ============================================================
+   RESPONSIVE (for smaller preview, mostly cosmetic)
+   ============================================================ */
+@media (max-width:900px){
+  .cover-content{padding:20px 30px;gap:10px}
+  .cover-title{font-size:52px}
+  .cover-mascot{width:240px}
+  .cover-halo{width:320px;height:320px}
+  .section-head h2{font-size:34px}
+  .quiz-wrap{left:100px;right:100px}
+}
+</style>
+</head>
+<body>
+<div class="stage-wrap" id="stageWrap">
+<div class="stage" id="stage">
+
+<!-- ============================================================
+     SLIDE 1 — COVER SINEMATIK
+     ============================================================ -->
+<section class="slide" data-slide="1">
+  <div class="bg-layer"></div>
+  <div class="cover-rays"></div>
+  <div class="bg-orb a"></div>
+  <div class="bg-orb b"></div>
+  <div class="bg-orb c"></div>
+
+  <div class="cover-content">
+    <div class="cover-left">
+      <div class="cover-halo"></div>
+      <div class="cover-mascot" id="coverMascot"></div>
+    </div>
+    <div class="cover-right">
+      <div class="cover-badge">🏫 SMP Negeri 4 Glenmore Satu Atap</div>
+      <h1 class="cover-title">
+        <span class="line1">Petualangan</span>
+        <span class="line2">Sistem Pencernaan</span>
+      </h1>
+      <div class="cover-meta">
+        <span class="chip">📚 Ilmu Pengetahuan Alam</span>
+        <span class="chip">🎓 Kelas VIII</span>
+        <span class="chip">🔬 9 Petualangan</span>
+      </div>
+      <p class="cover-tagline">
+        Jelajahi dunia mikro di dalam tubuhmu, temui organ-organ ajaib, dan temukan rahasia cara tubuh mengolah makanan menjadi energi!
+      </p>
+      <button class="btn btn-primary btn-lg" data-go="2">
+        <span>🚀</span> MULAI PETUALANGAN
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 2 — DASHBOARD PETA PETUALANGAN
+     ============================================================ -->
+<section class="slide" data-slide="2">
+  <div class="bg-layer"></div>
+  <div class="bg-orb a"></div>
+  <div class="bg-orb c"></div>
+
+  <div class="section-head">
+    <div class="eyebrow">🗺️ Peta Dunia</div>
+    <h2>Peta Petualangan</h2>
+    <p>Pilih lokasi tujuanmu untuk memulai penjelajahan</p>
+  </div>
+
+  <div class="map-wrap">
+    <div class="map-canvas">
+      <svg class="map-path" viewBox="0 0 1280 640" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="pathG" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="rgba(255,216,140,.6)"/>
+            <stop offset="100%" stop-color="rgba(255,107,157,.5)"/>
+          </linearGradient>
+        </defs>
+        <path d="M 640 140 Q 820 170 850 250 Q 880 340 850 430 Q 820 520 640 560 Q 460 520 430 430 Q 400 340 430 250 Q 460 170 640 140"
+              stroke="url(#pathG)" stroke-width="3" fill="none" stroke-dasharray="10 10" opacity=".7"/>
+      </svg>
+
+      <div class="map-mascot" id="mapMascot"></div>
+
+      <button class="portal" data-go="3" style="left:50%;top:22%">
+        <div class="portal-glow"></div>
+        <div class="portal-icon">🎯</div>
+        <div class="portal-label">Tujuan</div>
+      </button>
+      <button class="portal" data-go="4" style="left:66%;top:39%">
+        <div class="portal-glow"></div>
+        <div class="portal-icon">📖</div>
+        <div class="portal-label">Materi</div>
+      </button>
+      <button class="portal" data-go="5" style="left:66%;top:67%">
+        <div class="portal-glow"></div>
+        <div class="portal-icon">🔬</div>
+        <div class="portal-label">Eksplorasi</div>
+      </button>
+      <button class="portal" data-go="7" style="left:50%;top:80%">
+        <div class="portal-glow"></div>
+        <div class="portal-icon">🎮</div>
+        <div class="portal-label">Misi</div>
+      </button>
+      <button class="portal" data-go="8" style="left:34%;top:67%">
+        <div class="portal-glow"></div>
+        <div class="portal-icon">📝</div>
+        <div class="portal-label">Evaluasi</div>
+      </button>
+      <button class="portal" data-go="9" style="left:34%;top:39%">
+        <div class="portal-glow"></div>
+        <div class="portal-icon">👤</div>
+        <div class="portal-label">Profil</div>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 3 — TUJUAN & PETUNJUK
+     ============================================================ -->
+<section class="slide" data-slide="3">
+  <div class="bg-layer"></div>
+  <div class="bg-orb b"></div>
+
+  <div class="section-head">
+    <div class="eyebrow">🎯 Misi Pembelajaran</div>
+    <h2>Tujuan & Petunjuk</h2>
+    <p>Inilah yang akan kamu kuasai setelah petualangan ini</p>
+  </div>
+
+  <div class="tujuan-grid">
+    <div class="tujuan-left">
+      <div class="tujuan-mascot" id="tujuanMascot"></div>
+      <div class="speech">
+        Halo! Aku <b>Bolu</b>, si gigi geraham penjelajah. Aku akan menemanimu memahami sistem pencernaan! 🦷✨
+      </div>
+    </div>
+    <div class="tujuan-right">
+      <div class="obj-card">
+        <div class="obj-num">1</div>
+        <div class="obj-text"><b>Mengidentifikasi Organ</b>Mengenali organ-organ utama pada sistem pencernaan manusia beserta letaknya.</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">2</div>
+        <div class="obj-text"><b>Menjelaskan Fungsi</b>Menguraikan fungsi setiap organ dalam proses pengolahan makanan.</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">3</div>
+        <div class="obj-text"><b>Menganalisis Enzim</b>Menjelaskan peran enzim dalam pencernaan kimiawi (amilase, pepsin, tripsin, lipase).</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">4</div>
+        <div class="obj-text"><b>Menerapkan Konsep</b>Mengaitkan struktur organ dengan fungsinya untuk memecahkan masalah pencernaan.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" data-go="2">← Kembali</button>
+    <button class="btn btn-primary" data-go="4">Mulai Materi →</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 4 — KONSEP UTAMA
+     ============================================================ -->
+<section class="slide" data-slide="4">
+  <div class="bg-layer"></div>
+  <div class="bg-orb a"></div>
+
+  <div class="section-head">
+    <div class="eyebrow">💡 Konsep Inti</div>
+    <h2>Dua Jenis Pencernaan</h2>
+    <p>Bagaimana tubuh mengubah makanan menjadi zat yang dapat diserap?</p>
+  </div>
+
+  <div class="konsep-wrap">
+    <div class="konsep-intro">
+      <b>Sistem pencernaan</b> adalah proses memecah makanan menjadi zat yang lebih sederhana agar dapat diserap tubuh. Terjadi dua cara: <b>mekanik</b> (fisik) dan <b>kimiawi</b> (enzim).
+    </div>
+
+    <div class="konsep-grid">
+      <div class="konsep-card">
+        <div class="konsep-icon">🦷</div>
+        <h3>Pencernaan Mekanik</h3>
+        <p>Penghancuran makanan secara fisik menjadi bagian yang lebih kecil, sehingga mudah dicerna oleh enzim.</p>
+        <div class="example">
+          <b>Contoh:</b> Gigi mengunyah nasi, gerakan peristaltik lambung yang mengaduk makanan.
+        </div>
+      </div>
+      <div class="konsep-card k2">
+        <div class="konsep-icon">🧪</div>
+        <h3>Pencernaan Kimiawi</h3>
+        <p>Pemecahan makanan menggunakan bantuan enzim, yang mengubah zat kompleks menjadi zat sederhana.</p>
+        <div class="example">
+          <b>Contoh:</b> Amilase memecah amilum, pepsin memecah protein, lipase memecah lemak.
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-strip">
+      <div class="flow-step">👄 Mulut</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🔽 Kerongkongan</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🫙 Lambung</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🌀 Usus Halus</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🌊 Usus Besar</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">🚪 Anus</div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" data-go="3">← Kembali</button>
+    <button class="btn btn-primary" data-go="5">Lanjut ke Eksplorasi →</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 5 — EKSPLORASI MATERI 1
+     ============================================================ -->
+<section class="slide" data-slide="5">
+  <div class="bg-layer"></div>
+  <div class="bg-orb c"></div>
+
+  <div class="section-head">
+    <div class="eyebrow">🔬 Eksplorasi Bagian Pertama</div>
+    <h2>Mulut, Kerongkongan, Lambung</h2>
+    <p>Bagian atas saluran pencernaan — tempat petualangan dimulai</p>
+  </div>
+
+  <div class="explore-wrap">
+    <div class="explore-stage">
+      <div class="explore-art" id="explore1Art"></div>
+      <div class="explore-name" id="explore1Name">Mulut</div>
+      <div class="explore-tag" id="explore1Tag">Pencernaan Mekanik &amp; Kimiawi</div>
+    </div>
+
+    <div class="explore-tabs">
+      <div class="tab-strip" id="tabs1"></div>
+      <div class="explore-detail" id="detail1"></div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" data-go="2">← Beranda</button>
+    <button class="btn btn-primary" data-go="6">Lanjut →</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 6 — EKSPLORASI MATERI 2
+     ============================================================ -->
+<section class="slide" data-slide="6">
+  <div class="bg-layer"></div>
+  <div class="bg-orb b"></div>
+
+  <div class="section-head">
+    <div class="eyebrow">🔬 Eksplorasi Bagian Kedua</div>
+    <h2>Usus &amp; Organ Pendukung</h2>
+    <p>Bagian bawah saluran pencernaan — tempat penyerapan nutrisi</p>
+  </div>
+
+  <div class="explore-wrap">
+    <div class="explore-stage">
+      <div class="explore-art" id="explore2Art"></div>
+      <div class="explore-name" id="explore2Name">Usus Halus</div>
+      <div class="explore-tag" id="explore2Tag">Pusat Penyerapan Sari Makanan</div>
+    </div>
+
+    <div class="explore-tabs">
+      <div class="tab-group-label">Saluran Pencernaan</div>
+      <div class="tab-strip" id="tabs2a"></div>
+      <div class="tab-group-label" style="margin-top:10px">Organ Pendukung</div>
+      <div class="tab-strip" id="tabs2b"></div>
+      <div class="explore-detail" id="detail2" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="btn btn-ghost" data-go="5">← Kembali</button>
+    <button class="btn btn-primary" data-go="7">Lanjut ke Misi →</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 7 — MISI INTERAKTIF
+     ============================================================ -->
+<section class="slide" data-slide="7">
+  <div class="bg-layer"></div>
+  <div class="bg-orb a"></div>
+
+  <div class="section-head">
+    <div class="eyebrow">🎮 Misi Interaktif</div>
+    <h2>Berburu Harta Karun Pengetahuan</h2>
+    <p>Jawab 10 soal HOTS dan kumpulkan poin sebanyak mungkin!</p>
+  </div>
+
+  <div class="quiz-wrap" id="missionWrap">
+    <div class="quiz-meta">
+      <div class="quiz-step" id="missionStep">Soal 1 / 10</div>
+      <div class="quiz-score-pill"><span>⭐</span><span id="missionScore">0</span></div>
+    </div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" id="missionProgress"></div></div>
+    <div class="quiz-card" id="missionCard"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 8 — EVALUASI
+     ============================================================ -->
+<section class="slide" data-slide="8">
+  <div class="bg-layer"></div>
+  <div class="bg-orb c"></div>
+
+  <div class="section-head">
+    <div class="eyebrow">📝 Evaluasi Akhir</div>
+    <h2>Uji Pemahamanmu</h2>
+    <p>10 soal dengan tingkat kesulitan mudah, sedang, dan sulit</p>
+  </div>
+
+  <div class="quiz-wrap" id="evalWrap">
+    <div class="quiz-meta">
+      <div class="quiz-step" id="evalStep">Soal 1 / 10</div>
+      <div class="quiz-score-pill"><span>⭐</span><span id="evalScore">0</span></div>
+    </div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" id="evalProgress"></div></div>
+    <div class="quiz-card" id="evalCard"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 9 — PENUTUP & PROFIL
+     ============================================================ -->
+<section class="slide" data-slide="9">
+  <div class="bg-layer"></div>
+  <div class="cover-rays"></div>
+  <div class="bg-orb a"></div>
+  <div class="bg-orb b"></div>
+
+  <div class="penutup-wrap">
+    <div class="penutup-mascot" id="penutupMascot"></div>
+    <h2 class="penutup-title">Selamat! Petualanganmu Selesai! 🎉</h2>
+    <p class="penutup-sub">
+      Kamu telah menjelajahi seluruh sistem pencernaan manusia. Teruslah belajar dan jaga kesehatan pencernaanmu dengan makan bergizi dan teratur!
+    </p>
+    <div class="profile-card">
+      <div class="school">SMP Negeri 4 Glenmore Satu Atap</div>
+      <div class="info">Mata Pelajaran: Ilmu Pengetahuan Alam · Kelas VIII</div>
+      <div class="divider"></div>
+      <div class="info">Materi: Organ pada Sistem Pencernaan</div>
+      <div class="info" style="font-size:12px;margin-top:4px">Multimedia Pembelajaran Interaktif · 2025</div>
+    </div>
+    <div class="penutup-actions">
+      <button class="btn btn-ghost" data-go="2">🏠 Kembali ke Menu</button>
+      <button class="btn btn-primary" data-go="1">🔄 Ulangi Petualangan</button>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script>
+/* ============================================================
+   1. SVG ASSETS — Mascot & Organ Illustrations
+   ============================================================ */
+
+function mascotSVG(expr, opts = {}) {
+  const uid = 'm' + Math.random().toString(36).slice(2, 9);
+  const mouths = {
+    happy: `<path d="M 85 118 Q 100 132 115 118" stroke="#3B2A2F" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+    excited: `<path d="M 82 116 Q 100 142 118 116 Q 100 126 82 116 Z" fill="#3B2A2F"/>`,
+    thinking: `<path d="M 88 122 Q 100 126 110 120" stroke="#3B2A2F" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+    celebrate: `<path d="M 80 112 Q 100 148 120 112 Z" fill="#3B2A2F"/>`
+  };
+  const eyes = (expr === 'celebrate' || expr === 'excited')
+    ? `<path d="M 68 96 Q 80 78 92 96" stroke="#3B2A2F" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+       <path d="M 108 96 Q 120 78 132 96" stroke="#3B2A2F" stroke-width="4.5" fill="none" stroke-linecap="round"/>`
+    : `<ellipse cx="80" cy="95" rx="14" ry="16" fill="#FFFFFF" stroke="#3B2A2F" stroke-width="2.5"/>
+       <ellipse cx="120" cy="95" rx="14" ry="16" fill="#FFFFFF" stroke="#3B2A2F" stroke-width="2.5"/>
+       <circle cx="82" cy="99" r="7" fill="#3B2A2F"/>
+       <circle cx="122" cy="99" r="7" fill="#3B2A2F"/>
+       <circle cx="85" cy="94" r="2.5" fill="#FFFFFF"/>
+       <circle cx="125" cy="94" r="2.5" fill="#FFFFFF"/>`;
+
+  return `
+  <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <radialGradient id="tb_${uid}" cx="38%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#FFFFFF"/>
+        <stop offset="55%" stop-color="#FFF4E2"/>
+        <stop offset="100%" stop-color="#DCC0A0"/>
+      </radialGradient>
+      <linearGradient id="th_${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".95"/>
+        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="100" cy="212" rx="68" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 45 70 Q 42 38 68 30 Q 84 26 100 36 Q 116 26 132 30 Q 158 38 155 70 Q 162 110 150 148 Q 146 175 136 192 Q 128 202 120 190 Q 115 172 112 150 Q 100 145 88 150 Q 85 172 80 190 Q 72 202 64 192 Q 54 175 50 148 Q 38 110 45 70 Z"
+          fill="url(#tb_${uid})" stroke="#C8A888" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M 58 58 Q 63 44 85 38 Q 74 54 68 76 Z" fill="url(#th_${uid})"/>
+    ${eyes}
+    <ellipse cx="56" cy="115" rx="11" ry="6" fill="#FF9CB5" opacity=".7"/>
+    <ellipse cx="144" cy="115" rx="11" ry="6" fill="#FF9CB5" opacity=".7"/>
+    ${mouths[expr] || mouths.happy}
+  </svg>`;
+}
+
+const ORGAN_SVG = {
+  mulut: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <radialGradient id="lipG" cx="40%" cy="30%">
+        <stop offset="0%" stop-color="#FFB0C0"/><stop offset="55%" stop-color="#E84070"/><stop offset="100%" stop-color="#A02050"/>
+      </radialGradient>
+      <radialGradient id="cavG" cx="50%" cy="50%">
+        <stop offset="0%" stop-color="#500818"/><stop offset="100%" stop-color="#28040C"/>
+      </radialGradient>
+      <radialGradient id="toG" cx="30%" cy="30%">
+        <stop offset="0%" stop-color="#FFFFFF"/><stop offset="70%" stop-color="#F8ECD8"/><stop offset="100%" stop-color="#C0A888"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="65" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 30 100 Q 30 45 100 45 Q 170 45 170 100 Q 170 155 100 155 Q 30 155 30 100 Z" fill="url(#lipG)"/>
+    <path d="M 52 100 Q 52 62 100 62 Q 148 62 148 100 Q 148 138 100 138 Q 52 138 52 100 Z" fill="url(#cavG)"/>
+    <g fill="url(#toG)">
+      <rect x="58" y="80" width="10" height="16" rx="2"/><rect x="71" y="80" width="10" height="16" rx="2"/>
+      <rect x="84" y="80" width="10" height="16" rx="2"/><rect x="97" y="80" width="10" height="16" rx="2"/>
+      <rect x="110" y="80" width="10" height="16" rx="2"/><rect x="123" y="80" width="10" height="16" rx="2"/>
+      <rect x="136" y="80" width="10" height="16" rx="2"/>
+      <rect x="58" y="106" width="10" height="16" rx="2"/><rect x="71" y="106" width="10" height="16" rx="2"/>
+      <rect x="84" y="106" width="10" height="16" rx="2"/><rect x="97" y="106" width="10" height="16" rx="2"/>
+      <rect x="110" y="106" width="10" height="16" rx="2"/><rect x="123" y="106" width="10" height="16" rx="2"/>
+      <rect x="136" y="106" width="10" height="16" rx="2"/>
+    </g>
+    <ellipse cx="100" cy="130" rx="30" ry="10" fill="#E85878"/>
+    <ellipse cx="95" cy="127" rx="18" ry="4" fill="#FF98B0" opacity=".6"/>
+    <ellipse cx="65" cy="58" rx="22" ry="8" fill="#FFD0DC" opacity=".5" transform="rotate(-25 65 58)"/>
+  </svg>`,
+
+  kerongkongan: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <linearGradient id="esG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#C84868"/><stop offset="25%" stop-color="#FFA0B8"/>
+        <stop offset="50%" stop-color="#FFC0D0"/><stop offset="75%" stop-color="#FFA0B8"/>
+        <stop offset="100%" stop-color="#A83050"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="45" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 60 25 Q 55 100 65 180 L 135 180 Q 145 100 140 25 Z" fill="url(#esG)"/>
+    <path d="M 62 70 Q 100 62 138 70" stroke="#FFE0E8" stroke-width="2" fill="none" opacity=".55"/>
+    <path d="M 62 105 Q 100 97 138 105" stroke="#FFE0E8" stroke-width="2" fill="none" opacity=".55"/>
+    <path d="M 62 140 Q 100 132 138 140" stroke="#FFE0E8" stroke-width="2" fill="none" opacity=".55"/>
+    <path d="M 75 35 Q 78 100 80 175" stroke="#FFD0DC" stroke-width="5" opacity=".55" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  lambung: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <radialGradient id="stG" cx="35%" cy="25%" r="80%">
+        <stop offset="0%" stop-color="#FFD0B8"/><stop offset="45%" stop-color="#FF9068"/><stop offset="100%" stop-color="#C84830"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="105" cy="190" rx="60" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 95 30 C 80 35, 65 65, 65 100 C 65 135, 80 165, 115 170 C 150 175, 180 155, 178 128 C 176 108, 158 100, 145 95 C 132 90, 128 80, 126 65 C 124 50, 120 38, 112 32 C 106 28, 100 28, 95 30 Z" fill="url(#stG)"/>
+    <path d="M 82 62 Q 88 100 92 140 Q 96 158 115 164" stroke="#C84830" stroke-width="3" fill="none" opacity=".35"/>
+    <path d="M 100 55 Q 105 100 108 140" stroke="#C84830" stroke-width="2.5" fill="none" opacity=".28"/>
+    <ellipse cx="102" cy="78" rx="24" ry="15" fill="#FFE8DC" opacity=".55" transform="rotate(-30 102 78)"/>
+    <ellipse cx="142" cy="128" rx="14" ry="9" fill="#FFE8DC" opacity=".35" transform="rotate(20 142 128)"/>
+  </svg>`,
+
+  ususHalus: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <linearGradient id="siG" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FFB8A8"/><stop offset="50%" stop-color="#F08070"/><stop offset="100%" stop-color="#C84848"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="70" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 40 40 Q 100 20 160 40 Q 175 55 155 75 Q 100 90 50 75 Q 25 65 25 95 Q 25 125 50 135 Q 100 150 150 135 Q 175 125 175 155 Q 170 175 150 175"
+          stroke="url(#siG)" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 45 35 Q 100 18 155 35" stroke="#FFD8D0" stroke-width="4" fill="none" stroke-linecap="round" opacity=".55"/>
+  </svg>`,
+
+  ususBesar: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <linearGradient id="liG" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#F0A0B8"/><stop offset="50%" stop-color="#D06088"/><stop offset="100%" stop-color="#A03858"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="70" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 40 170 L 40 50 Q 40 30 60 30 L 140 30 Q 160 30 160 50 L 160 170"
+          stroke="url(#liG)" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 40 70 L 60 70" stroke="#A03858" stroke-width="2" opacity=".5"/>
+    <path d="M 40 110 L 60 110" stroke="#A03858" stroke-width="2" opacity=".5"/>
+    <path d="M 40 150 L 60 150" stroke="#A03858" stroke-width="2" opacity=".5"/>
+    <path d="M 140 70 L 160 70" stroke="#A03858" stroke-width="2" opacity=".5"/>
+    <path d="M 140 110 L 160 110" stroke="#A03858" stroke-width="2" opacity=".5"/>
+    <path d="M 140 150 L 160 150" stroke="#A03858" stroke-width="2" opacity=".5"/>
+    <path d="M 45 50 L 45 165" stroke="#FFD8E0" stroke-width="5" opacity=".5" stroke-linecap="round"/>
+  </svg>`,
+
+  anus: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <radialGradient id="anG" cx="35%" cy="30%">
+        <stop offset="0%" stop-color="#FFC8D0"/><stop offset="60%" stop-color="#E898A8"/><stop offset="100%" stop-color="#A85068"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="50" ry="8" fill="#000" opacity=".18"/>
+    <ellipse cx="100" cy="100" rx="55" ry="45" fill="url(#anG)"/>
+    <ellipse cx="100" cy="102" rx="25" ry="20" fill="#601828"/>
+    <ellipse cx="100" cy="102" rx="25" ry="20" fill="none" stroke="#C06078" stroke-width="4"/>
+    <ellipse cx="75" cy="75" rx="15" ry="8" fill="#FFE8F0" opacity=".6" transform="rotate(-30 75 75)"/>
+  </svg>`,
+
+  hati: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <radialGradient id="lvG" cx="30%" cy="25%" r="85%">
+        <stop offset="0%" stop-color="#E8A080"/><stop offset="45%" stop-color="#B85838"/><stop offset="100%" stop-color="#702828"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="70" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 30 70 Q 25 35 70 28 Q 120 20 165 40 Q 185 55 175 90 Q 165 125 130 135 Q 90 140 60 125 Q 30 110 30 70 Z" fill="url(#lvG)"/>
+    <path d="M 100 40 Q 105 80 95 125" stroke="#602020" stroke-width="3" fill="none" opacity=".4"/>
+    <ellipse cx="70" cy="55" rx="25" ry="12" fill="#FFD0B0" opacity=".5" transform="rotate(-15 70 55)"/>
+  </svg>`,
+
+  pankreas: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <radialGradient id="pcG" cx="30%" cy="30%">
+        <stop offset="0%" stop-color="#FFE8C0"/><stop offset="60%" stop-color="#E8B070"/><stop offset="100%" stop-color="#A86828"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="60" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 30 100 Q 50 80 80 90 Q 120 100 155 80 Q 180 65 185 85 Q 185 105 155 110 Q 120 115 80 120 Q 50 125 30 100 Z" fill="url(#pcG)"/>
+    <path d="M 50 95 Q 80 100 110 100" stroke="#A86828" stroke-width="1.5" fill="none" opacity=".4"/>
+    <path d="M 60 108 Q 90 112 130 106" stroke="#A86828" stroke-width="1.5" fill="none" opacity=".35"/>
+    <ellipse cx="70" cy="92" rx="20" ry="5" fill="#FFEEC8" opacity=".6" transform="rotate(-10 70 92)"/>
+  </svg>`,
+
+  empedu: `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+    <defs>
+      <radialGradient id="emG" cx="35%" cy="30%">
+        <stop offset="0%" stop-color="#D8F0A0"/><stop offset="50%" stop-color="#88C048"/><stop offset="100%" stop-color="#407020"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="100" cy="185" rx="50" ry="8" fill="#000" opacity=".18"/>
+    <path d="M 100 40 C 70 50, 55 80, 60 120 C 65 155, 85 175, 100 175 C 115 175, 135 155, 140 120 C 145 80, 130 50, 100 40 Z" fill="url(#emG)"/>
+    <ellipse cx="82" cy="80" rx="14" ry="20" fill="#E8FFC8" opacity=".6" transform="rotate(-15 82 80)"/>
+  </svg>`
+};
+
+/* ============================================================
+   2. DATA
+   ============================================================ */
+
+const EXPLORATION1 = [
+  { id:'mulut', name:'Mulut', tag:'Pencernaan Mekanik & Kimiawi',
+    desc:'Di dalam mulut, makanan dikunyah oleh gigi (pencernaan mekanik) lalu dicampur ludah yang mengandung enzim amilase (ptialin). Enzim ini mengubah amilum menjadi gula sederhana (maltosa) — itulah mengapa nasi terasa manis saat dikunyah lama!',
+    facts:['Gigi: mengunyah makanan menjadi bagian kecil','Lidah: mengatur posisi makanan saat menelan','Ludah: mengandung enzim amilase + antiseptik'] },
+  { id:'kerongkongan', name:'Kerongkongan', tag:'Penghubung Mulut & Lambung',
+    desc:'Kerongkongan (esofagus) adalah saluran berotot sepanjang ±20–25 cm yang mendorong makanan menuju lambung melalui gerakan peristaltik — gelombang kontraksi otot yang bekerja tanpa bantuan gravitasi.',
+    facts:['Panjang ±20–25 cm','Gerakan peristaltik mendorong makanan','Dilapisi lendir agar makanan mudah lewat'] },
+  { id:'lambung', name:'Lambung', tag:'Pencernaan Kimiawi Utama',
+    desc:'Lambung adalah kantong berotot yang menghasilkan asam klorida (HCl) dan enzim pepsin. HCl membunuh bakteri dan mengaktifkan pepsin, sedangkan pepsin memecah protein menjadi pepton.',
+    facts:['HCl: membunuh bakteri & mengaktifkan pepsin','Pepsin: memecah protein menjadi pepton','Dinding lambung dilindungi lapisan mukus'] }
+];
+
+const EXPLORATION2_MAIN = [
+  { id:'ususHalus', name:'Usus Halus', tag:'Pusat Penyerapan Sari Makanan',
+    desc:'Usus halus adalah saluran berjonjot (vili) tempat sebagian besar pencernaan kimiawi dan penyerapan sari makanan berlangsung. Enzim dari pankreas dan dinding usus bekerja di sini.',
+    facts:['Vili memperluas permukaan penyerapan','Enzim tripsin, amilase, lipase dari pankreas','Panjang ±6 meter: duodenum, jejunum, ileum'] },
+  { id:'ususBesar', name:'Usus Besar', tag:'Penyerapan Air & Pembentukan Feses',
+    desc:'Usus besar menyerap air dan garam mineral dari sisa makanan, lalu membentuk feses. Bakteri baik di dalamnya membantu fermentasi serat dan memproduksi vitamin K.',
+    facts:['Menyerap air & garam mineral','Membentuk feses (sisa pencernaan)','Bakteri baik membantu pencernaan serat'] },
+  { id:'anus', name:'Anus', tag:'Pintu Keluar Sisa Pencernaan',
+    desc:'Anus adalah lubang terakhir saluran pencernaan. Proses pengeluaran feses disebut defekasi. Otot sfingter mengontrol kapan feses dikeluarkan.',
+    facts:['Proses pengeluaran feses: defekasi','Sfingter mengontrol keluarnya feses','Menandai akhir saluran pencernaan'] }
+];
+
+const EXPLORATION2_SUPPORT = [
+  { id:'hati', name:'Hati', tag:'Organ Pendukung',
+    desc:'Hati menghasilkan empedu yang disimpan di kantong empedu. Empedu mengemulsikan lemak menjadi butiran kecil agar mudah dicerna oleh enzim lipase.',
+    facts:['Menghasilkan empedu','Empedu mengemulsikan lemak','Berperan dalam detoksifikasi'] },
+  { id:'pankreas', name:'Pankreas', tag:'Organ Pendukung',
+    desc:'Pankreas menghasilkan enzim tripsin, amilase, dan lipase yang dialirkan ke usus halus. Enzim ini mencerna protein, karbohidrat, dan lemak.',
+    facts:['Tripsin: memecah protein','Amilase: memecah amilum','Lipase: memecah lemak'] },
+  { id:'empedu', name:'Kantong Empedu', tag:'Organ Pendukung',
+    desc:'Kantong empedu menyimpan empedu yang dihasilkan hati. Saat makanan berlemak masuk usus halus, empedu dikeluarkan untuk mengemulsikan lemak.',
+    facts:['Menyimpan empedu dari hati','Mengeluarkan empedu saat ada lemak','Membantu kerja enzim lipase'] }
+];
+
+/* ---- MISSION (HOTS) ---- */
+const MISSION_QUESTIONS = [
+  { q:'Rina mengunyah nasi selama 2 menit lalu merasakan rasa manis. Mengapa hal itu terjadi?',
+    opts:['Nasi mengandung gula pasir tambahan','Enzim amilase dalam ludah mengubah amilum menjadi gula sederhana','Air liur mengandung asam klorida','Gigi mengeluarkan enzim protease'],
+    c:1, exp:'Enzim amilase (ptialin) di ludah memecah amilum menjadi maltosa (gula sederhana), sehingga nasi terasa manis.' },
+  { q:'Jika vili-vili pada usus halus rusak, gangguan yang paling mungkin terjadi adalah...',
+    opts:['Penyerapan sari makanan terganggu','Pembentukan feses terhambat','Pengunyahan makanan melemah','Produksi HCl lambung menurun'],
+    c:0, exp:'Vili berfungsi memperluas permukaan penyerapan sari makanan. Jika rusak, penyerapan terganggu.' },
+  { q:'Andi menderita gastritis. Mengapa asam lambung dapat merusak dinding lambung?',
+    opts:['Produksi mukus pelindung berkurang','Enzim pepsin berubah menjadi amilase','Lambung tidak memiliki otot','HCl berubah menjadi air'],
+    c:0, exp:'Lapisan mukus melindungi lambung dari HCl. Jika mukus berkurang, dinding lambung dapat rusak.' },
+  { q:'Seseorang diangkat kantong empedunya. Makanan berlemak jadi sulit dicerna. Mengapa?',
+    opts:['Empedu tidak lagi mengemulsikan lemak','Enzim lipase tidak diproduksi','Lemak langsung diserap usus besar','Hati berhenti memproduksi protein'],
+    c:0, exp:'Empedu dihasilkan hati dan disimpan di kantong empedu. Tanpa empedu, lemak sulit diemulsikan.' },
+  { q:'Makanan dapat bergerak di kerongkongan tanpa bantuan gravitasi karena...',
+    opts:['Gerakan peristaltik','Tekanan udara','Gaya kapiler','Gerakan silia'],
+    c:0, exp:'Otot kerongkongan melakukan gerakan peristaltik, yaitu gelombang kontraksi yang mendorong makanan.' },
+  { q:'Gangguan pada pankreas paling mengganggu pencernaan...',
+    opts:['Protein, amilum, dan lemak','Air dan mineral','Vitamin','Hanya glukosa'],
+    c:0, exp:'Pankreas menghasilkan tripsin (protein), amilase (amilum), dan lipase (lemak).' },
+  { q:'Perhatikan urutan: mulut → X → lambung → Y → usus besar → anus. X dan Y adalah...',
+    opts:['Kerongkongan dan usus halus','Usus halus dan kerongkongan','Hati dan pankreas','Rektum dan kolon'],
+    c:0, exp:'Urutan sistem pencernaan: mulut → kerongkongan → lambung → usus halus → usus besar → anus.' },
+  { q:'Mengapa makanan berserat membantu kerja usus besar?',
+    opts:['Membantu gerak peristaltik dan memperlancar defekasi','Menambah enzim pencernaan','Memperlambat penyerapan air','Membunuh bakteri baik'],
+    c:0, exp:'Serat membantu gerakan peristaltik usus besar dan mencegah sembelit.' },
+  { q:'Kesimpulan yang tepat tentang hubungan struktur dan fungsi organ pencernaan adalah...',
+    opts:['Struktur organ disesuaikan dengan fungsinya','Semua organ pencernaan sama','Fungsi tidak terkait struktur','Pencernaan hanya mekanik'],
+    c:0, exp:'Setiap organ memiliki struktur yang mendukung fungsinya, misalnya vili pada usus halus.' },
+  { q:'Seorang siswa mengalami luka pada usus halus sehingga sebagian diangkat. Dampak jangka panjang paling mungkin adalah...',
+    opts:['Penyerapan nutrisi berkurang sehingga bisa malnutrisi','Produksi empedu berhenti','Pengunyahan terganggu','Pencernaan mekanik hilang'],
+    c:0, exp:'Usus halus adalah tempat utama penyerapan nutrisi. Jika diangkat, penyerapan bisa terganggu.' }
+];
+
+/* ---- EVALUATION ---- */
+const EVAL_QUESTIONS = [
+  { q:'Organ pertama yang dilalui makanan saat masuk ke tubuh adalah...', diff:'mudah',
+    opts:['Mulut','Lambung','Kerongkongan','Usus halus'], c:0,
+    exp:'Makanan masuk pertama kali ke mulut untuk dikunyah dan dicampur ludah.' },
+  { q:'Enzim yang dihasilkan lambung untuk memecah protein adalah...', diff:'mudah',
+    opts:['Amilase','Pepsin','Tripsin','Lipase'], c:1,
+    exp:'Pepsin memecah protein menjadi pepton.' },
+  { q:'Penyerapan air dan pembentukan feses terjadi di...', diff:'mudah',
+    opts:['Usus halus','Usus besar','Lambung','Mulut'], c:1,
+    exp:'Usus besar menyerap air dan membentuk feses.' },
+  { q:'Urutan organ sistem pencernaan yang benar adalah...', diff:'sedang',
+    opts:['Mulut → lambung → kerongkongan → usus halus → usus besar → anus',
+          'Mulut → kerongkongan → lambung → usus halus → usus besar → anus',
+          'Mulut → usus halus → lambung → kerongkongan → usus besar → anus',
+          'Mulut → kerongkongan → usus besar → usus halus → lambung → anus'], c:1,
+    exp:'Urutan yang benar: mulut → kerongkongan → lambung → usus halus → usus besar → anus.' },
+  { q:'Enzim amilase di mulut berfungsi mengubah...', diff:'sedang',
+    opts:['Protein menjadi pepton','Amilum menjadi gula sederhana','Lemak menjadi asam lemak','Pepton menjadi asam amino'], c:1,
+    exp:'Amilase (ptialin) mengubah amilum menjadi maltosa (gula sederhana).' },
+  { q:'Fungsi utama vili-vili pada usus halus adalah...', diff:'sedang',
+    opts:['Menyerap sari makanan','Menghasilkan HCl','Menyimpan feses','Menghasilkan empedu'], c:0,
+    exp:'Vili memperluas permukaan usus halus sehingga penyerapan sari makanan lebih efisien.' },
+  { q:'Organ yang menghasilkan empedu untuk mengemulsikan lemak adalah...', diff:'sedang',
+    opts:['Pankreas','Hati','Kantong empedu','Lambung'], c:1,
+    exp:'Hati menghasilkan empedu (disimpan di kantong empedu) yang mengemulsikan lemak.' },
+  { q:'Gangguan pada pankreas menyebabkan sulit mencerna...', diff:'sulit',
+    opts:['Karbohidrat dan protein saja','Protein, karbohidrat, dan lemak','Vitamin dan mineral','Air dan garam mineral'], c:1,
+    exp:'Pankreas menghasilkan tripsin, amilase, dan lipase yang mencerna protein, karbohidrat, dan lemak.' },
+  { q:'Mekanisme yang mendorong makanan dari mulut ke lambung adalah...', diff:'sulit',
+    opts:['Gaya gravitasi','Gerakan peristaltik','Tekanan udara','Gerakan silia'], c:1,
+    exp:'Gerakan peristaltik otot kerongkongan mendorong makanan menuju lambung.' },
+  { q:'Seorang pasien dioperasi dan sebagian usus halusnya diangkat. Dampak jangka panjang paling mungkin adalah...', diff:'sulit',
+    opts:['Penyerapan nutrisi berkurang sehingga bisa terjadi malnutrisi','Produksi empedu berhenti','Pengunyahan makanan terganggu','Pencernaan mekanik di mulut hilang'], c:0,
+    exp:'Usus halus adalah tempat utama penyerapan nutrisi, sehingga pengangkatan dapat menyebabkan malnutrisi.' }
+];
+
+/* ============================================================
+   3. SOUND (minimal Web Audio)
+   ============================================================ */
+const Sound = {
+  ctx:null, enabled:true,
+  init(){ if(!this.ctx){ try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); },
+  play(f,d,type='sine',v=0.06){ if(!this.enabled || !this.ctx) return; try{
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.value = f; g.gain.value = v;
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + d);
+    o.connect(g).connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime + d);
+  }catch(e){} },
+  click(){ this.play(660,0.08,'sine',0.04); },
+  correct(){ this.play(523,0.1); setTimeout(()=>this.play(784,0.15),80); setTimeout(()=>this.play(1046,0.2),180); },
+  wrong(){ this.play(220,0.15,'sawtooth',0.05); setTimeout(()=>this.play(160,0.2,'sawtooth',0.04),100); },
+  win(){ [523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>this.play(f,0.3,'triangle',0.06), i*100)); }
+};
+
+/* ============================================================
+   4. NAVIGATION
+   ============================================================ */
+let currentSlide = 1;
+
+function showSlide(n){
+  n = parseInt(n);
+  if(isNaN(n)) return;
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  const target = document.querySelector(`.slide[data-slide="${n}"]`);
+  if(!target) return;
+  target.classList.add('active');
+  currentSlide = n;
+  updateHudDots(n);
+  Sound.click();
+}
+
+function updateHudDots(n){
+  document.querySelectorAll('.hud-dots').forEach(dots => {
+    dots.querySelectorAll('.hud-dot').forEach((d, i) => {
+      d.classList.toggle('active', i+1 === n);
+      d.classList.toggle('done', i+1 < n);
+    });
+  });
+}
+
+// Inject HUD into slides 2-9
+function injectHuds(){
+  for(let n=2; n<=9; n++){
+    const slide = document.querySelector(`.slide[data-slide="${n}"]`);
+    if(!slide) continue;
+    const hud = document.createElement('div');
+    hud.className = 'hud';
+    hud.innerHTML = `
+      <button class="hud-btn" data-go="2">🏠 Beranda</button>
+      <div class="hud-dots">
+        ${[1,2,3,4,5,6,7,8,9].map(i=>`<span class="hud-dot${i===n?' active':''}"></span>`).join('')}
+      </div>
+      <button class="hud-btn sound-toggle">🔊</button>
+    `;
+    slide.insertBefore(hud, slide.firstChild);
+  }
+  document.querySelectorAll('.sound-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      Sound.enabled = !Sound.enabled;
+      document.querySelectorAll('.sound-toggle').forEach(b => b.textContent = Sound.enabled ? '🔊' : '🔇');
+      if(Sound.enabled) Sound.click();
+    });
+  });
+}
+
+/* ============================================================
+   5. INJECT MASCOTS
+   ============================================================ */
+function injectMascots(){
+  const cover = document.getElementById('coverMascot');
+  if(cover) cover.innerHTML = mascotSVG('excited');
+  const map = document.getElementById('mapMascot');
+  if(map) map.innerHTML = mascotSVG('happy');
+  const tuj = document.getElementById('tujuanMascot');
+  if(tuj) tuj.innerHTML = mascotSVG('thinking');
+  const pen = document.getElementById('penutupMascot');
+  if(pen) pen.innerHTML = mascotSVG('celebrate');
+}
+
+/* ============================================================
+   6. EXPLORATION SLIDE 5
+   ============================================================ */
+let currentExp1 = 0;
+
+function initExploration1(){
+  const tabsEl = document.getElementById('tabs1');
+  const detailEl = document.getElementById('detail1');
+  const artEl = document.getElementById('explore1Art');
+  const nameEl = document.getElementById('explore1Name');
+  const tagEl = document.getElementById('explore1Tag');
+
+  tabsEl.innerHTML = EXPLORATION1.map((o,i) =>
+    `<button class="tab-btn" data-i="${i}">${o.name}</button>`
+  ).join('');
+
+  tabsEl.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentExp1 = parseInt(btn.dataset.i);
+      renderExp1();
+      Sound.click();
+    });
+  });
+
+  function renderExp1(){
+    const o = EXPLORATION1[currentExp1];
+    tabsEl.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active', i===currentExp1));
+    artEl.innerHTML = ORGAN_SVG[o.id];
+    nameEl.textContent = o.name;
+    tagEl.textContent = o.tag;
+    detailEl.innerHTML = `
+      <h3><span class="dot"></span>${o.name}</h3>
+      <div class="explore-desc">${o.desc}</div>
+      <div class="tab-group-label" style="color:var(--ink-3);margin-top:4px">Fakta Penting</div>
+      <ul class="explore-facts">
+        ${o.facts.map(f => `<li><span>✦</span><span>${f}</span></li>`).join('')}
+      </ul>
+    `;
+  }
+
+  renderExp1();
+}
+
+/* ============================================================
+   7. EXPLORATION SLIDE 6
+   ============================================================ */
+let currentExp2 = 0;
+const EXP2_ALL = [...EXPLORATION2_MAIN, ...EXPLORATION2_SUPPORT];
+
+function initExploration2(){
+  const tabsA = document.getElementById('tabs2a');
+  const tabsB = document.getElementById('tabs2b');
+  const detailEl = document.getElementById('detail2');
+  const artEl = document.getElementById('explore2Art');
+  const nameEl = document.getElementById('explore2Name');
+  const tagEl = document.getElementById('explore2Tag');
+
+  tabsA.innerHTML = EXPLORATION2_MAIN.map((o,i) =>
+    `<button class="tab-btn" data-i="${i}">${o.name}</button>`
+  ).join('');
+  tabsB.innerHTML = EXPLORATION2_SUPPORT.map((o,i) =>
+    `<button class="tab-btn" data-i="${i+3}">${o.name}</button>`
+  ).join('');
+
+  document.querySelectorAll('#tabs2a .tab-btn, #tabs2b .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentExp2 = parseInt(btn.dataset.i);
+      renderExp2();
+      Sound.click();
+    });
+  });
+
+  function renderExp2(){
+    const o = EXP2_ALL[currentExp2];
+    document.querySelectorAll('#tabs2a .tab-btn, #tabs2b .tab-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.i) === currentExp2);
+    });
+    artEl.innerHTML = ORGAN_SVG[o.id];
+    nameEl.textContent = o.name;
+    tagEl.textContent = o.tag;
+    detailEl.innerHTML = `
+      <h3><span class="dot"></span>${o.name}</h3>
+      <div class="explore-desc">${o.desc}</div>
+      <div class="tab-group-label" style="color:var(--ink-3);margin-top:4px">Fakta Penting</div>
+      <ul class="explore-facts">
+        ${o.facts.map(f => `<li><span>✦</span><span>${f}</span></li>`).join('')}
+      </ul>
+    `;
+  }
+
+  renderExp2();
+}
+
+/* ============================================================
+   8. QUIZ ENGINE (shared for Mission & Evaluation)
+   ============================================================ */
+const QuizState = {
+  mission: { idx:0, score:0, answered:false, finished:false, questions: MISSION_QUESTIONS },
+  evaluation: { idx:0, score:0, answered:false, finished:false, questions: EVAL_QUESTIONS }
+};
+
+function initQuiz(quizId, wrapId, stepId, scoreId, progId, cardId){
+  const st = QuizState[quizId];
+  st.idx = 0; st.score = 0; st.answered = false; st.finished = false;
+
+  const card = document.getElementById(cardId);
+  const step = document.getElementById(stepId);
+  const score = document.getElementById(scoreId);
+  const prog = document.getElementById(progId);
+
+  function render(){
+    const q = st.questions[st.idx];
+    step.textContent = `Soal ${st.idx+1} / ${st.questions.length}`;
+    score.textContent = st.score;
+    prog.style.width = ((st.idx) / st.questions.length * 100) + '%';
+
+    let diffHtml = '';
+    if(q.diff){
+      const labels = { mudah:'MUDAH', sedang:'SEDANG', sulit:'SULIT' };
+      diffHtml = `<div class="q-diff ${q.diff}">● ${labels[q.diff]}</div>`;
+    }
+
+    card.innerHTML = `
+      ${diffHtml}
+      <div class="q-text">${q.q}</div>
+      <div class="q-options" id="${quizId}Opts"></div>
+      <div class="feedback" id="${quizId}Fb"></div>
+      <button class="quiz-next" id="${quizId}Next">Lanjut →</button>
+    `;
+
+    const optsBox = document.getElementById(quizId + 'Opts');
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+      b.addEventListener('click', () => answer(i, b));
+      optsBox.appendChild(b);
+    });
+
+    const nextBtn = document.getElementById(quizId + 'Next');
+    nextBtn.addEventListener('click', () => {
+      if(st.idx < st.questions.length - 1){
+        st.idx++;
+        st.answered = false;
+        render();
+      } else {
+        finish();
+      }
+    });
+
+    st.answered = false;
+  }
+
+  function answer(i, btn){
+    if(st.answered) return;
+    st.answered = true;
+
+    const q = st.questions[st.idx];
+    const all = document.querySelectorAll(`#${quizId}Opts .opt-btn`);
+    all.forEach(b => b.disabled = true);
+
+    const fb = document.getElementById(quizId + 'Fb');
+    if(i === q.c){
+      btn.classList.add('correct');
+      st.score += 10;
+      Sound.correct();
+      fb.className = 'feedback correct show';
+      fb.innerHTML = `<span>✅</span><div><b>Tepat sekali!</b>${q.exp}</div>`;
+    } else {
+      btn.classList.add('wrong');
+      all[q.c].classList.add('correct');
+      Sound.wrong();
+      fb.className = 'feedback wrong show';
+      fb.innerHTML = `<span>❌</span><div><b>Belum tepat.</b>${q.exp}</div>`;
+    }
+    document.getElementById(scoreId).textContent = st.score;
+    document.getElementById(quizId + 'Next').classList.add('show');
+    prog.style.width = ((st.idx + 1) / st.questions.length * 100) + '%';
+  }
+
+  function finish(){
+    st.finished = true;
+    Sound.win();
+    const maxScore = st.questions.length * 10;
+    const pct = st.score / maxScore;
+    let stars = 1;
+    if(pct >= 0.85) stars = 3;
+    else if(pct >= 0.6) stars = 2;
+
+    const titles = {
+      3: ['Luar Biasa!', 'Kamu menguasai materi dengan sangat baik!'],
+      2: ['Kerja Bagus!', 'Pemahamanmu sudah baik, terus tingkatkan!'],
+      1: ['Tetap Semangat!', 'Ayo pelajari lagi materi dan coba kembali!']
+    };
+    const notes = {
+      3: 'Kamu sudah memahami organ, fungsi, dan enzim pada sistem pencernaan. Pertahankan! 🌟',
+      2: 'Ingat kembali peran enzim dan urutan organ pencernaan. Kamu hampir sempurna! 📚',
+      1: 'Pelajari lagi urutan organ dan fungsi enzim, lalu coba lagi. Kamu pasti bisa! 💪'
+    };
+
+    const isMission = quizId === 'mission';
+    const nextText = isMission ? 'Lanjut ke Evaluasi →' : 'Selesai → Penutup';
+    const nextSlide = isMission ? 8 : 9;
+
+    card.innerHTML = `
+      <div class="quiz-result show">
+        <div class="result-stars">
+          <span class="${stars>=1?'on':''}">⭐</span>
+          <span class="${stars>=2?'on':''}">⭐</span>
+          <span class="${stars>=3?'on':''}">⭐</span>
+        </div>
+        <div>
+          <div style="font-family:Fredoka;font-size:24px;font-weight:700;color:var(--ink)">${titles[stars][0]}</div>
+          <div style="font-size:14px;color:var(--ink-3);font-weight:700;margin-top:4px">${titles[stars][1]}</div>
+        </div>
+        <div class="result-score">${st.score}</div>
+        <div class="result-of">dari ${maxScore} poin</div>
+        <div class="result-note">${notes[stars]}</div>
+        <button class="btn btn-primary" data-go="${nextSlide}" style="margin-top:6px">${nextText}</button>
+      </div>
+    `;
+    step.textContent = 'Selesai';
+    prog.style.width = '100%';
+
+    // animate stars
+    setTimeout(() => { Sound.win(); }, 400);
+  }
+
+  render();
+}
+
+/* ============================================================
+   9. EVENT BINDING & INIT
+   ============================================================ */
+function bindNavigation(){
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-go]');
+    if(btn){
+      e.preventDefault();
+      Sound.init();
+      showSlide(btn.dataset.go);
+    }
+  });
+}
+
+function fitStage(){
+  const wrap = document.getElementById('stageWrap');
+  const stage = document.getElementById('stage');
+  if(!wrap || !stage) return;
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  const scale = Math.min(w / 1280, h / 720);
+  stage.style.transform = `scale(${scale})`;
+}
+
+function init(){
+  injectHuds();
+  injectMascots();
+  initExploration1();
+  initExploration2();
+  initQuiz('mission', 'missionWrap', 'missionStep', 'missionScore', 'missionProgress', 'missionCard');
+  initQuiz('evaluation', 'evalWrap', 'evalStep', 'evalScore', 'evalProgress', 'evalCard');
+  bindNavigation();
+  fitStage();
+  window.addEventListener('resize', fitStage);
+
+  // show first slide
+  showSlide(1);
+
+  // keyboard shortcuts (useful for whiteboard / laptop)
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowRight'){ if(currentSlide < 9) showSlide(currentSlide + 1); }
+    if(e.key === 'ArrowLeft'){ if(currentSlide > 1) showSlide(currentSlide - 1); }
+    if(e.key === 'Escape'){ showSlide(2); }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
